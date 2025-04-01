@@ -49,7 +49,7 @@ public class ParticleApplication extends Application {
         int numTypes = 7;
         PhysicsEngine.setParameters(numTypes);
 
-        int numParticles = 15000;
+        int numParticles = 18000;
         // int maxDistance = 100;
         int gridSize = 250;
         int gridWidth = worldWidth / gridSize;

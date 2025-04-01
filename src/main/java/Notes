@@ -21,8 +21,6 @@ Leverage your existing type system for specialized behaviors
 Create specific particle types that act as "worm heads" with higher max speed
 Define "follower" types that maintain proximity to leader particles
 
-
-
 Implementation Suggestions
 For Worm-like Behavior:
 Copy// In PhysicsEngine.java:
@@ -45,3 +43,97 @@ Vector2D currentDirection = a.velocity.copy();
 currentDirection.normalize();
 currentDirection.scale(0.1 * a.velocity.magnitude()); // Subtle forward bias
 totalForce.add(currentDirection);
+
+Verify Spatial Partitioning
+To verify that your particles are correctly using the spatial partitioning grid, you can add a visual debug mode that:
+
+Colors each grid cell differently
+Colors particles based on their grid cell
+Highlights when particles cross cell boundaries
+
+Here's the code to add:
+javaCopy// Add to your class fields
+private boolean debugPartitioning = false;  // Toggle with 'P' key
+
+// Add to your keyboard handler
+case P -> debugPartitioning = !debugPartitioning;
+
+// Add this code after drawing grid but before drawing particles
+if (debugPartitioning) {
+    // Draw colored grid cells
+    for (int row = 0; row < gridHeight; row++) {
+        for (int col = 0; col < gridWidth; col++) {
+            // Generate a consistent color for this cell
+            int colorSeed = (row * gridWidth + col) % 10;
+            Color cellColor = Color.hsb(36 * colorSeed, 0.7, 0.3, 0.3);
+
+            // Draw cell rectangle
+            double x1 = camera.worldToScreenX(col * gridSize);
+            double y1 = camera.worldToScreenY(row * gridSize);
+            double x2 = camera.worldToScreenX((col + 1) * gridSize);
+            double y2 = camera.worldToScreenY((row + 1) * gridSize);
+
+            graphicsContext.setFill(cellColor);
+            graphicsContext.fillRect(x1, y1, x2-x1, y2-y1);
+
+            // Show particle count in this cell
+            graphicsContext.setFill(Color.WHITE);
+            String countText = String.valueOf(particles[row][col].size());
+            graphicsContext.fillText(countText,
+                    camera.worldToScreenX(col * gridSize + gridSize/2) - 5,
+                    camera.worldToScreenY(row * gridSize + gridSize/2) + 5);
+        }
+    }
+
+    // Modify your particle display to show grid cell colors
+    // temporarily override the display method in animation loop
+    for (int row = 0; row < gridHeight; row++) {
+        for (int col = 0; col < gridWidth; col++) {
+            int colorSeed = (row * gridWidth + col) % 10;
+            Color cellColor = Color.hsb(36 * colorSeed, 1.0, 0.8);
+
+            for (Particle p : particles[row][col]) {
+                double screenX = camera.worldToScreenX(p.position.x);
+                double screenY = camera.worldToScreenY(p.position.y);
+                double radiusZoomed = p.radius * camera.zoom;
+
+                // Check if particle position matches its grid cell
+                int expectedRow = (int)(p.position.y / gridSize);
+                int expectedCol = (int)(p.position.x / gridSize);
+
+                if (expectedRow == row && expectedCol == col) {
+                    // Normal case - particle is in the right cell
+                    graphicsContext.setFill(cellColor);
+                } else {
+                    // Error case - particle is in wrong cell!
+                    graphicsContext.setFill(Color.RED);
+                }
+
+                graphicsContext.fillOval(screenX, screenY, radiusZoomed, radiusZoomed);
+            }
+        }
+    }
+
+    // Add debug metrics
+    graphicsContext.setFill(Color.WHITE);
+    graphicsContext.fillText("Debug Mode: Grid Partitioning", 10, canvas.getHeight() - 60);
+    graphicsContext.fillText("Press 'P' to toggle", 10, canvas.getHeight() - 40);
+}
+else {
+    // Normal particle rendering (your existing code)
+    for (int row = 0; row < gridHeight; row++) {
+        for (int col = 0; col < gridWidth; col++) {
+            for (Particle p : particles[row][col]) {
+                p.display(graphicsContext, camera);
+            }
+        }
+    }
+}
+This debug mode will:
+
+Color-code each grid cell
+Show the number of particles in each cell
+Highlight particles in red if they're in the wrong cell (which would indicate a spatial partitioning bug)
+
+When this debug mode is active, you should see particles properly contained within their respective grid cells.
+If any particles show up as red, that means there's an issue with your spatial partitioning logic.
