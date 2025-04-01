@@ -1,0 +1,47 @@
+To achieve worm-like effects and organisms that start slow but become extremely fast in your particle simulator, I've analyzed your code and identified several areas where you could make targeted modifications:
+Physics Engine Adjustments
+
+Directional Forces and Memory
+
+In PhysicsEngine.java, modify the force calculation to include "memory" of previous movements
+Add inertia components that build up over time for each particle
+Consider implementing a "head" and "tail" concept where particles follow a leader
+
+
+Acceleration Curve
+
+Currently, your velocity updates are linear with friction (a.velocity.scale(friction))
+Implement a non-linear acceleration curve where particles start slow but build momentum
+Replace the constant friction (0.85) with a dynamic value that decreases as speed increases
+
+
+Type-based Behavior
+
+Leverage your existing type system for specialized behaviors
+Create specific particle types that act as "worm heads" with higher max speed
+Define "follower" types that maintain proximity to leader particles
+
+
+
+Implementation Suggestions
+For Worm-like Behavior:
+Copy// In PhysicsEngine.java:
+// Add attraction between same-type particles that increases with distance
+if (a.type == b.type) {
+    double followStrength = Vector2D.map(distance, minDistance[a.type][b.type],
+                                       radii[a.type][b.type], 0.5, 2.0);
+    force.scale(followStrength);
+}
+For Acceleration Over Time:
+Copy// Add a "age" or "momentum" property to Particle class
+// Then in PhysicsEngine.updateAll():
+double accelerationFactor = Math.min(1.0, a.age / 500.0);
+friction = Math.max(0.5, 0.85 - (0.2 * accelerationFactor));
+a.velocity.scale(friction);
+a.age++;
+For Directional Persistence:
+Copy// Add a directional bias to maintain heading
+Vector2D currentDirection = a.velocity.copy();
+currentDirection.normalize();
+currentDirection.scale(0.1 * a.velocity.magnitude()); // Subtle forward bias
+totalForce.add(currentDirection);

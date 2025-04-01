@@ -28,7 +28,7 @@ public class SimulationView {
             switch (e.getCode()) {
                 case W -> camera.move(0, -20);
                 case S -> camera.move(0, 20);
-                case A -> camera.move(-20, 0);
+                case A -> PhysicsEngine.setParameters(7);
                 case D -> camera.move(20, 0);
             }
         });
