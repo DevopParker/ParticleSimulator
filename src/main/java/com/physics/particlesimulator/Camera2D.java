@@ -4,7 +4,7 @@ public class Camera2D {
     public double x;      // top-left corner x in world space
     public double y;
     public double zoom;   // 1.0 = 100%, >1 = zoom in, <1 = zoom out
-    public double minZoom = 0.1; // dynamically calculated based on world and screen size
+    public double minZoom = 0.1;
     public double maxZoom = 5.0; // default, but override dynamically at runtime
 
 

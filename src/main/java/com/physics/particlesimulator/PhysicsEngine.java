@@ -40,32 +40,26 @@ public class PhysicsEngine {
             for (int col = 0; col < gridWidth; col++) {
                 ArrayList<Particle> currentCell = grid[row][col];
 
-                // Skip empty cells
                 if (currentCell.isEmpty()) continue;
 
-                // For each particle in the current cell
                 for (int i = 0; i < currentCell.size(); i++) {
                     Particle a = currentCell.get(i);
                     Vector2D totalForce = new Vector2D(0, 0);
                     Vector2D acceleration = new Vector2D(0, 0);
 
-                    // Check interactions with other particles in current cell
                     for (int j = 0; j < currentCell.size(); j++) {
                         if (i != j) {
                             applyForces(a, currentCell.get(j), totalForce, width, height, K);
                         }
                     }
 
-                    // Calculate cell radius based on maximum interaction distance
                     int cellRadius = (int)Math.ceil(250.0 / gridSize); // 3 with grid size 100 and max radius 250
 
-// Check neighboring cells within calculated radius (with toroidal wrapping)
                     for (int dRow = -cellRadius; dRow <= cellRadius; dRow++) {
                         for (int dCol = -cellRadius; dCol <= cellRadius; dCol++) {
                             int nRow = (row + dRow + gridHeight) % gridHeight;
                             int nCol = (col + dCol + gridWidth) % gridWidth;
 
-                            // Skip the current cell (already processed)
                             if (nRow == row && nCol == col) continue;
 
                             ArrayList<Particle> neighborCell = grid[nRow][nCol];
@@ -81,20 +75,17 @@ public class PhysicsEngine {
                     a.velocity.add(acceleration);
                     a.position.add(a.velocity);
 
-                    // Handle wrapping around world borders
                     a.position.x = (a.position.x + width) % width;
                     a.position.y = (a.position.y + height) % height;
                     a.velocity.scale(friction);
 
-                    // Check if particle moved to a different cell
                     int newRow = (int)(a.position.y / gridSize);
                     int newCol = (int)(a.position.x / gridSize);
 
-                    // Ensure new coordinates are within bounds
+                    // Make sure within bounds
                     newRow = Math.min(Math.max(newRow, 0), gridHeight - 1);
                     newCol = Math.min(Math.max(newCol, 0), gridWidth - 1);
 
-                    // Check if particle needs to move to a different cell
                     if (newRow != row || newCol != col) {
                         particlesToMove.add(new ParticleMove(a, row, col, newRow, newCol));
                     }
@@ -123,19 +114,18 @@ public class PhysicsEngine {
         }
     }
 
-    // Helper method to calculate and apply forces between particles
+    // Calculate and apply forces between particles
     private static void applyForces(Particle a, Particle b, Vector2D totalForce, double width, double height, double K) {
         Vector2D direction = b.position.copy();
         direction.subtract(a.position);
 
-        // Handle wrapping around the world borders
         if (direction.x > 0.5 * width) direction.x -= width;
         if (direction.x < -0.5 * width) direction.x += width;
         if (direction.y > 0.5 * height) direction.y -= height;
         if (direction.y < -0.5 * height) direction.y += height;
 
         double distance = direction.magnitude();
-        if (distance > 0) { // Prevent division by zero
+        if (distance > 0) {
             direction.normalize();
 
             // Repulsive force

@@ -49,9 +49,9 @@ public class ParticleApplication extends Application {
         int numTypes = 7;
         PhysicsEngine.setParameters(numTypes);
 
-        int numParticles = 18000;
+        int numParticles = 5000; // 15000
         // int maxDistance = 100;
-        int gridSize = 250;
+        int gridSize = 250; // Needs to be same as max force (250)
         int gridWidth = worldWidth / gridSize;
         int gridHeight = worldHeight / gridSize;
 
@@ -69,7 +69,7 @@ public class ParticleApplication extends Application {
             double y = Vector2D.random(0, worldHeight);
             Vector2D pos = new Vector2D(x, y);
 
-            double vx = Vector2D.random(-1, 1); // slight initial motion
+            double vx = Vector2D.random(-1, 1);
             double vy = Vector2D.random(-1, 1);
             Vector2D vel = new Vector2D(vx, vy);
 
@@ -113,11 +113,19 @@ public class ParticleApplication extends Application {
                 PhysicsEngine.updateAll(particles, worldWidth, worldHeight);
                 camera.clampToWorld(worldWidth, worldHeight, canvas.getWidth(), canvas.getHeight());
 
+                // Spawn particles
+                for (int row = 0; row < gridHeight; row++) {
+                    for (int col = 0; col < gridWidth; col++) {
+                        for (Particle p : particles[row][col]) {
+                            p.display(graphicsContext, camera);
+                        }
+                    }
+                }
+
                 // Draw grid lines
-                graphicsContext.setStroke(Color.rgb(255, 255, 255, 0.2)); // White with 20% opacity
+                graphicsContext.setStroke(Color.rgb(255, 255, 255, 0.2));
                 graphicsContext.setLineWidth(0.5);
 
-                // Calculate visible world area on screen
                 double worldStartX = camera.screenToWorldX(0);
                 double worldStartY = camera.screenToWorldY(0);
                 double worldEndX = camera.screenToWorldX(canvas.getWidth());
@@ -126,10 +134,8 @@ public class ParticleApplication extends Application {
                 // Draw vertical grid lines
                 for (int col = 0; col <= gridWidth; col++) {
                     double worldX = col * gridSize;
-                    // Only draw if line is within world bounds
                     if (worldX >= 0 && worldX <= worldWidth) {
                         double screenX = camera.worldToScreenX(worldX);
-                        // Constrain Y endpoints to world boundaries
                         double startY = Math.max(0, camera.worldToScreenY(0));
                         double endY = Math.min(canvas.getHeight(), camera.worldToScreenY(worldHeight));
                         graphicsContext.strokeLine(screenX, startY, screenX, endY);
@@ -139,24 +145,13 @@ public class ParticleApplication extends Application {
                 // Draw horizontal grid lines
                 for (int row = 0; row <= gridHeight; row++) {
                     double worldY = row * gridSize;
-                    // Only draw if line is within world bounds
                     if (worldY >= 0 && worldY <= worldHeight) {
                         double screenY = camera.worldToScreenY(worldY);
-                        // Constrain X endpoints to world boundaries
                         double startX = Math.max(0, camera.worldToScreenX(0));
                         double endX = Math.min(canvas.getWidth(), camera.worldToScreenX(worldWidth));
                         graphicsContext.strokeLine(startX, screenY, endX, screenY);
                     }
                 }
-
-                for (int row = 0; row < gridHeight; row++) {
-                    for (int col = 0; col < gridWidth; col++) {
-                        for (Particle p : particles[row][col]) {
-                            p.display(graphicsContext, camera);
-                        }
-                    }
-                }
-
 
                 // Display FPS and grid size
                 graphicsContext.setFill(Color.WHITE);
