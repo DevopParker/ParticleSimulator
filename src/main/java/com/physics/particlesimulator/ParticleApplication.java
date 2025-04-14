@@ -122,9 +122,9 @@ public class ParticleApplication extends Application {
                     }
                 }
 
-                // Draw grid lines
-                graphicsContext.setStroke(Color.rgb(255, 255, 255, 0.2));
-                graphicsContext.setLineWidth(0.5);
+                // Apply the grid lines
+                //graphicsContext.setStroke(Color.rgb(255, 255, 255, 0.2));
+                //graphicsContext.setLineWidth(0.5);
 
                 double worldStartX = camera.screenToWorldX(0);
                 double worldStartY = camera.screenToWorldY(0);
